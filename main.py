@@ -34,21 +34,28 @@ def create_task(task: dict):
 def update_task(task_id: int, updates: dict):
     if not updates or ("title" not in updates and "done" not in updates):
         return JSONResponse(status_code=400, content={"error": "Request body must include title or done"})
-    for task in tasks:
-        if task["id"] == task_id:
-            if "title" in updates:
-                task["title"] = updates["title"]
-            if "done" in updates:
-                task["done"] = updates["done"]
-            return task
-    return JSONResponse(status_code=404, content={"error": f"Task {task_id} not found"})
+    conn = get_connection()
+    row = conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
+    if not row:
+        conn.close()
+        return JSONResponse(status_code=404, content={"error": f"Task {task_id} not found"})
+    title = updates.get("title", row["title"])
+    done = updates.get("done", row["done"])
+    conn.execute("UPDATE tasks SET title = ?, done = ? WHERE id = ?", (title, done, task_id))
+    conn.commit()
+    conn.close()
+    return {"id": task_id, "title": title, "done": bool(done)}
 @app.delete("/tasks/{task_id}", status_code=204)
 def delete_task(task_id: int):
-    for task in tasks:
-        if task["id"] == task_id:
-            tasks.remove(task)
-            return
-    return JSONResponse(status_code=404, content={"error": f"Task {task_id} not found"})
+    conn = get_connection()
+    row = conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
+    if not row:
+        conn.close()
+        return JSONResponse(status_code=404, content={"error": f"Task {task_id} not found"})
+    conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+    conn.commit()
+    conn.close()
+    return
 @app.get("/tasks/{task_id}")
 def get_task(task_id: int):
     conn = get_connection()
