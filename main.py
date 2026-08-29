@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from database import get_connection
 from database import init_db
 
 app = FastAPI()
@@ -15,7 +16,10 @@ def health_check():
      return {"status": "ok"}
 @app.get("/tasks")
 def get_tasks():
-     return tasks
+    conn = get_connection()
+    rows = conn.execute("SELECT * FROM tasks").fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
 @app.post("/tasks",status_code=201)
 def create_task(task: dict):
     if "title" not in task or not task["title"]:
@@ -45,7 +49,9 @@ def delete_task(task_id: int):
     return JSONResponse(status_code=404, content={"error": f"Task {task_id} not found"})
 @app.get("/tasks/{task_id}")
 def get_task(task_id: int):
-    for task in tasks:
-        if task["id"] == task_id:
-            return task
+    conn = get_connection()
+    row = conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
+    conn.close()
+    if row:
+        return dict(row)
     return JSONResponse(status_code=404, content={"error": f"Task {task_id} not found"})
