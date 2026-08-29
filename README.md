@@ -31,3 +31,19 @@ curl -i http://127.0.0.1:8000/tasks
 ## Swagger UI
 
 ![Swagger UI](./Full%20Crud%20Api.png)
+
+## Database (Week 3)
+
+Tasks are now stored in a SQLite database (`tasks.db`) instead of memory. Data survives server restarts.
+
+**Why SQLite:** no separate server to install, the whole database is one file, perfect for a small project like this.
+
+**Database file:** `tasks.db`, created automatically on first run. The `tasks` table is created if missing, and 3 example tasks are seeded only if the table is empty (so restarting never duplicates them).
+
+**Example SQL query:**
+\`\`\`sql
+SELECT * FROM tasks WHERE done = 1;
+\`\`\`
+This returns only the tasks marked as completed.
+
+![DB Browser screenshot](./database.png)
