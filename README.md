@@ -57,3 +57,17 @@ SELECT * FROM tasks WHERE done = 1;
 This returns only the tasks marked as completed.
 
 ![DB Browser screenshot](./Database.png)
+
+## Database (Week 4 — Postgres in Docker)
+
+Tasks are now stored in **PostgreSQL**, running in a Docker container, instead of SQLite. The whole stack (API + database) starts with one command: `docker compose up`.
+
+**Why Postgres in Docker:** SQLite was a single file — fine for one developer, but not how real backends run. Postgres runs as its own server, the same kind of database that powers production systems. Docker means anyone can run the exact same database, with zero manual installation.
+
+**Connection:** the app reads `DATABASE_URL` from `.env` (a `.env.example` is committed with placeholder values). Inside Docker's network, the app reaches the database by its service name (`db`), not `localhost`.
+
+**Persistence proven:** created a task, ran `docker compose down` then `docker compose up` — the task was still there. The named Docker volume (`taskdata`) keeps the data outside the container's lifecycle.
+
+**Architecture:** all database logic lives in `database.py` (a repository layer) — the routes in `main.py` never changed when the storage swapped from SQLite to Postgres. That's the whole point of the pattern.
+
+![Postgres data screenshot](./postgres-data.png)
