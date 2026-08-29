@@ -21,6 +21,23 @@ def create_task(task: dict):
     new_task = {"id": new_id,"title": task["title"],"done":False}
     tasks.append(new_task)
     return new_task
+@app.put("/tasks/{task_id}")  
+def update_task(task_id:int, updates:dict):
+    for task in tasks:
+        if task["id"] == task_id:
+            if "title" in updates:
+                task["title"] = updates["title"]
+            if "done" in updates:
+                task["done"] = updates["done"]
+            return task
+    raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+@app.delete("/tasks/{task_id}",status_code=204)
+def delete_task(task_id:int):
+    for task in tasks:
+        if task["id"] == task_id:
+            tasks.remove(task)
+            return
+    raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
 @app.get("/tasks/{task_id}")
 def get_task(task_id:int):
   for task in tasks:
