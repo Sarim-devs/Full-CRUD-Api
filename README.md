@@ -56,4 +56,4 @@ SELECT * FROM tasks WHERE done = 1;
 \`\`\`
 This returns only the tasks marked as completed.
 
-![DB Browser screenshot](./database.png)
+![DB Browser screenshot](./Database.png)
