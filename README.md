@@ -30,4 +30,4 @@ curl -i http://127.0.0.1:8000/tasks
 
 ## Swagger UI
 
-![Swagger UI](Full%20Crud%20Api.png)
+![Swagger UI](./Full%20Crud%20Api.png)
