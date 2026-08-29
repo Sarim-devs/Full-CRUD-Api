@@ -24,9 +24,19 @@ A small CRUD API for managing tasks, built with FastAPI. Stores tasks in memory 
 
 ## Example request
 
-\`\`\`
+
 curl -i http://127.0.0.1:8000/tasks
-\`\`\`
+
+Response:
+
+HTTP/1.1 200 OK
+date: Sat, 29 Aug 2026 20:22:20 GMT
+server: uvicorn
+content-length: 125
+content-type: application/json
+
+[{"id":1,"title":"Buy milk","done":0},{"id":2,"title":"Walk the dog","done":0},{"id":3,"title":"Finish assignment","done":1}]
+
 
 ## Swagger UI
 
