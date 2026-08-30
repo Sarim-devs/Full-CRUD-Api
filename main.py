@@ -83,5 +83,10 @@ def protected_profile(request: Request):
     if not auth_header or not auth_header.startswith("Bearer "):
         return JSONResponse(status_code=401, content={"error": "Access token required"})
     token = auth_header.split(" ")[1]
-    return {"message": "You sent a token, but I'm not checking it yet", "token_preview": token[:10]}
+    try:
+        result = supabase.auth.get_user(token)
+        user = result.user
+        return {"id": user.id, "email": user.email, "created_at": user.created_at}
+    except Exception:
+        return JSONResponse(status_code=401, content={"error": "Invalid or expired token"})
     
