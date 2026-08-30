@@ -1,18 +1,17 @@
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import FastAPI, HTTPException, Request, Depends, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse
 from database import get_connection, init_db, get_task_by_id, get_all_tasks, insert_task,update_task,delete_task
 from supabase_client import supabase
 
 app = FastAPI()
 init_db()
+bearer_scheme = HTTPBearer()
 
 tasks = [{"id":1,"title":"Buy milk","done":False},{"id":2,"title":"Walk the dog","done":False},{"id":3,"title":"Finish assignment","done":True},]
 
-def verify_token(request: Request):
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Access token required")
-    token = auth_header.split(" ")[1]
+def verify_token(credentials: HTTPAuthorizationCredentials = Security(bearer_scheme)):
+    token = credentials.credentials
     try:
         result = supabase.auth.get_user(token)
         return result.user
