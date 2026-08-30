@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from database import get_connection, init_db, get_task_by_id, get_all_tasks, insert_task,update_task,delete_task
+from supabase_client import supabase
 
 app = FastAPI()
 init_db()
@@ -44,3 +45,15 @@ def get_task(task_id: int):
     if task:
         return task
     return JSONResponse(status_code=404, content={"error": f"Task {task_id} not found"})
+    
+@app.post("/auth/signup", status_code=201)
+def signup(credentials: dict):
+    email = credentials.get("email")
+    password = credentials.get("password")
+    if not email or not password:
+        return JSONResponse(status_code=400, content={"error": "Email and password are required"})
+    try:
+        result = supabase.auth.sign_up({"email": email, "password": password})
+        return {"user": result.user}
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
