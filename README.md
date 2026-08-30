@@ -71,3 +71,47 @@ Tasks are now stored in **PostgreSQL**, running in a Docker container, instead o
 **Architecture:** all database logic lives in `database.py` (a repository layer) — the routes in `main.py` never changed when the storage swapped from SQLite to Postgres. That's the whole point of the pattern.
 
 ![Postgres data screenshot](./postgres-data.png)
+
+## Auth (Week 4 — Supabase Auth & Protected Routes)
+
+This week adds real user authentication using **Supabase Auth** as the Identity Provider. The app never stores passwords or hashes anything itself — Supabase handles account creation, password hashing, and signing JWTs.
+
+**Auth endpoints:**
+
+| Method | Path | Auth required | Description |
+|--------|------|----------------|-------------|
+| POST | /auth/signup | none | Create a new user account |
+| POST | /auth/login | none | Log in, returns access + refresh token |
+| POST | /auth/logout | Bearer token | End the session |
+| GET | /protected/profile | Bearer token | Read the logged-in user's profile |
+| GET | /protected/dashboard | Bearer token | Second example of a protected route |
+| GET | /public/info | none | Open, unauthenticated data |
+
+**How it works:** the client signs up or logs in against Supabase directly (via this API), receives a JWT access token, and sends it in the `Authorization: Bearer <token>` header on every protected request. The server verifies the token with Supabase (`supabase.auth.get_user()`) before allowing access — an invalid, expired, or missing token returns `401`.
+
+**Middleware:** all token verification lives in one reusable dependency (`verify_token`), applied to every protected route via FastAPI's `Depends()`. Adding a new protected route requires zero new auth code.
+
+**Swagger UI:** protected routes show a padlock icon at `/docs`. Click "Authorize," paste a valid access token, and test protected routes directly from the browser.
+
+![Swagger authorized profile response](./swagger-auth.png)
+
+**Setup:** requires a free Supabase project. Copy `SUPABASE_URL` and `SUPABASE_KEY` (the anon key, never the service_role key) into `.env` — see `.env.example`.
+
+**Example request:**
+
+```bash
+curl -i -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"testuser100@gmail.com","password":"password123"}'
+```
+
+**Response:**
+
+```
+HTTP/1.1 200 OK
+content-type: application/json
+
+{"access_token":"eyJhbGciOiJFUzI1NiIs...(truncated)","refresh_token":"4m5maegyc45e"}
+```
+
+![Supabase users](./supabase-users.png)
